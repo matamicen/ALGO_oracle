@@ -217,7 +217,7 @@ int 1000
 &&
 txn Note
 btoi
-int <min>
+int <exchange_rate>
 ==
 &&
 txn LastValid
@@ -272,9 +272,18 @@ txn Fee
 int 1000
 <=
 &&
-gtxn 0 Sender
-addr BE5RNUTEERA3PJW6SRDS4NOQ4S6UVXRUPN2YOTJLGUROXCCXADDVWRSJR4
+gtxn 1 Sender
+addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
 ==
+&&
+gtxn 0 Amount
+int 10000
+*
+gtxn 1 Note
+btoi
+/
+txn Amount
+>=
 &&
 return
 `;
@@ -301,7 +310,7 @@ return
 
 
 
-        oracleTemplate = oracleTemplate.replace("<min>", parseInt("00205000"));    
+        oracleTemplate = oracleTemplate.replace("<exchange_rate>", parseInt("00025000"));    
         let program = oracleTemplate.replace("<lastvalid>", lastvalid); 
         console.log(program)
         compilation = await compileProgram(algodClient, program);
@@ -314,7 +323,7 @@ return
         args = null;
         // let lsig = algosdk.makeLogicSig(program_array, args);
         oracle_lsig = new algosdk.LogicSigAccount(program_array, args);
-        console.log('after logicsigAccount: '+oracle_lsig.address())
+        console.log('Oracle_logicsic_account: '+oracle_lsig.address())
 
         let oracle_sk = algosdk.mnemonicToSecretKey("popular sauce pride off fluid you come coffee display list stadium blood scout bargain segment laptop hand employ demise grass sign adult want abstract exhibit")
         console.log(oracle_sk.addr.toString())
@@ -340,11 +349,12 @@ return
          receiver = "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA";
          const enc = new TextEncoder();
         //  const note = enc.encode("5");
-         tipoCambio = parseInt("00205000") // tipo de cambio, 4 ultimos son decimales
+         tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales
          note = algosdk.encodeUint64(tipoCambio);
          let amount = 0;
          let closeout = receiver; //closeRemainderTo
          let sender = oracle_sk.addr.toString();
+       
         
          // oracle tx1
          let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, sender, amount, undefined, note, params);
@@ -359,17 +369,30 @@ return
             // tx = await algodClient.sendRawTransaction(lstx.blob).do();
             // console.log(tx);
 
+            assetTxfer = 2
+            assetTxnferMicroalgo = assetTxfer*1000000
+            console.log('se van a enviar 2 assets ')
+            // tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales
+            console.log("tipo cambio:" + tipoCambio)
+            envioAlgos = (assetTxnferMicroalgo*tipoCambio/10000)
+            // console.log("aplico cambio: "+aplicoCambio)
+            // envioAlgosRedondeo = Math.ceil(aplicoCambio)
+            // envioAlgos = aplicoCambio*1000000;
+            console.log("envioAlgos: "+envioAlgos)
+
         // GT paga a CT tx0
         sender = gt_lsig.address(); // Green Treassury Account
         receiver = ct_lsig.address(); // CT account
-        amount = 2000000;
+        // amount = 2000000;
+        amount = envioAlgos;
         note = enc.encode("GT paga");
         let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
 
         // CT paga a GT tx2
         sender = ct_lsig.address(); // Green Treassury Account
         receiver = gt_lsig.address() // GT account
-        amount = 1000000;
+        // amount = 1000000;
+        amount = assetTxnferMicroalgo;
         note = enc.encode("CT paga");
         let txn2 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
 
