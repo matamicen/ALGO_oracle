@@ -2,6 +2,8 @@ const { logicSigFromByte } = require('algosdk');
 const algosdk = require('algosdk');
 const fs = require('fs');
 const utils = require('./utils');
+const axios = require('axios');
+
 
 
 
@@ -309,32 +311,100 @@ return
 
 
 
+        // oracle desde aca - se cambio por la llamada al backend
 
-        oracleTemplate = oracleTemplate.replace("<exchange_rate>", parseInt("00025000"));    
-        let program = oracleTemplate.replace("<lastvalid>", lastvalid); 
-        console.log(program)
-        compilation = await compileProgram(algodClient, program);
-        //generate unique filename
-        // let uintAr = _base64ToArrayBuffer(compilation.result);
-        console.log(compilation.result)
-        oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
-        console.log(oracleProgramReferenceProgramBytesReplace)
-        program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
-        args = null;
-        // let lsig = algosdk.makeLogicSig(program_array, args);
-        oracle_lsig = new algosdk.LogicSigAccount(program_array, args);
-        console.log('Oracle_logicsic_account: '+oracle_lsig.address())
+        // oracleTemplate = oracleTemplate.replace("<exchange_rate>", parseInt("00025000"));    
+        // let program = oracleTemplate.replace("<lastvalid>", lastvalid); 
+        // console.log(program)
+        // compilation = await compileProgram(algodClient, program);
+        // //generate unique filename
+        // // let uintAr = _base64ToArrayBuffer(compilation.result);
+        // console.log(compilation.result)
+        // oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+        // console.log(oracleProgramReferenceProgramBytesReplace)
+        // program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+        // args = null;
+        // // let lsig = algosdk.makeLogicSig(program_array, args);
+        // oracle_lsig = new algosdk.LogicSigAccount(program_array, args);
+        // console.log('Oracle_logicsic_account: '+oracle_lsig.address())
 
-        let oracle_sk = algosdk.mnemonicToSecretKey("popular sauce pride off fluid you come coffee display list stadium blood scout bargain segment laptop hand employ demise grass sign adult want abstract exhibit")
-        console.log(oracle_sk.addr.toString())
-        oracle_lsig.sign(oracle_sk.sk);
+        // let oracle_sk = algosdk.mnemonicToSecretKey("popular sauce pride off fluid you come coffee display list stadium blood scout bargain segment laptop hand employ demise grass sign adult want abstract exhibit")
+        // console.log(oracle_sk.addr.toString())
+        // oracle_lsig.sign(oracle_sk.sk);
 
-        let accountInfo = await algodClient.accountInformation(oracle_sk.addr).do();
-        // let accountInfo = await algodClient.accountInformation(myAccount2).do();
-        // console.log(accountInfo);
-        console.log("Account balance: %d microAlgos", accountInfo.amount);
-        let startingAmount = accountInfo.amount;
+        // let accountInfo = await algodClient.accountInformation(oracle_sk.addr).do();
+        // // let accountInfo = await algodClient.accountInformation(myAccount2).do();
+        // // console.log(accountInfo);
+        // console.log("Account balance: %d microAlgos", accountInfo.amount);
+        // let startingAmount = accountInfo.amount;
         
+         // fin oracle desde aca - se cambio por la llamada al backend
+
+
+        //  const response =  await fetch('http://localhost:8080/oracle', {
+        //     method: 'POST',
+        //     headers: {
+        //       "Access-Control-Allow-Origin": "*",
+        //       'Accept': 'application/json',
+        //       'Content-Type': 'application/json',
+        //     },
+        //     // body: JSON.stringify({
+        //     //   param1: encoded1,
+        //     //   // secondParam: 'yourOtherValue',
+        //     // })
+        //   });
+        await keypress();
+
+        const response =  await axios.post('http://localhost:8080/oracle', {
+            // method: 'POST',
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            // body: JSON.stringify({
+            //   param1: encoded1,
+            //   // secondParam: 'yourOtherValue',
+            // })
+          });
+ 
+        //   console.log("devuelve oracle: " +response.data)
+          console.log("devuelve oracle: " +response.data.signedOracle)
+          signedTxn = response.data.signedOracle
+
+        const signed = algosdk.decodeObj(new Uint8Array(Buffer.from(signedTxn, "base64")));
+        console.log("decoded:")
+          console.log(signed)
+        
+          // este anda perfecto de abajo
+          oracle_lsig = new algosdk.LogicSigAccount(signed.lsig.logic, signed.lsig.args);
+       
+       
+          console.log(oracle_lsig)
+          console.log('antes de signar')
+          console.log(oracle_lsig.address())
+          oracle_lsig.sigkey = signed.sigkey
+        //   signed.lsig.sigkey
+          oracle_lsig.lsig.sig = signed.lsig.sig
+          console.log('despues de signar')
+          console.log(oracle_lsig)
+          console.log(oracle_lsig.address())
+        
+        //   console.log('Oracle_logicsic_account: '+oracle_lsig.address())
+          
+        //   console.log("oracle  signed address:")
+        //   var string = new TextDecoder().decode(oracle_lsig.lsig.sig);
+        //   console.log(string)
+            // let decodedLsig = signed.sig;
+            // anda esto de abajo 2 lineas
+        //   oracle_lsig = new algosdk.LogicSigAccount(signed.lsig.logic, signed.lsig.args);
+        //   console.log('Oracle_logicsic_account: '+oracle_lsig.address())
+
+
+        //   sigOracle = algosdk.makeLogicSig(decodedLsig.l, decodedLsig.arg);
+        //   await algodClient.sendRawTransaction(signed.blob).do();
+         
+
          // Construct the transaction
          let params = await algodClient.getTransactionParams().do();
          // comment out the next two lines to use suggested fee
@@ -353,8 +423,9 @@ return
          note = algosdk.encodeUint64(tipoCambio);
          let amount = 0;
          let closeout = receiver; //closeRemainderTo
-         let sender = oracle_sk.addr.toString();
-       
+        //  let sender = oracle_sk.addr.toString();
+        let sender = "YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4";
+         
         
          // oracle tx1
          let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, sender, amount, undefined, note, params);
@@ -398,7 +469,7 @@ return
 
           // assign group id to transactions
         algosdk.assignGroupID([txn0, txn1, txn2]);
-
+        
         // sign transactions
         // const stxn0 = txn0.signTxn(gt_lsig.sk);
         const stxn0 = algosdk.signLogicSigTransactionObject(txn0, gt_lsig);
