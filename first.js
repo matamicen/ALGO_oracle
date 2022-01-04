@@ -171,72 +171,20 @@ async function logicSigcTransaction() {
         lastvalid = status["last-round"] + 10
 
 
-let gt_logicsig = `#pragma version 5
-txn CloseRemainderTo
-global ZeroAddress
-==
-txn RekeyTo
-global ZeroAddress
-==
-&&
-txn Fee
-int 1000
-<=
-&&
-return
-`;
-
-
-
-let ct_logicsig = `#pragma version 5
-txn TypeEnum
-int pay
-==
-global GroupSize
-int 4
-==
-&&
-txn CloseRemainderTo
-global ZeroAddress
-==
-&&
-txn RekeyTo
-global ZeroAddress
-==
-&&
-txn Fee
-int 1000
-<=
-&&
-gtxn 1 Sender
-addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
-==
-&&
-gtxn 0 Amount
-int 10000
-*
-gtxn 1 Note
-btoi
-/
-txn Amount
->=
-&&
-return
-`;
-        let compilation = await compileProgram(algodClient, ct_logicsig);
-        oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
-        let program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
-        let args = null;
-        // let lsig = algosdk.makeLogicSig(program_array, args);
+            let compilation = await compileProgram(algodClient, ct_logicsig);
+            oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+            let program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+            let args = null;
+       
         ct_lsig = new algosdk.LogicSigAccount(program_array, args);
         console.log('CT_logicsic_account: '+ct_lsig.address())
 
 
-        compilation = await compileProgram(algodClient, gt_logicsig);
-        oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
-        program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
-        args = null;
-        // let lsig = algosdk.makeLogicSig(program_array, args);
+            compilation = await compileProgram(algodClient, gt_logicsig);
+            oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+            program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+            args = null;
+       
         gt_lsig = new algosdk.LogicSigAccount(program_array, args);
         console.log('GT_logicsic_account: '+gt_lsig.address())
 
@@ -258,7 +206,7 @@ return
             // })
           });
  
-        //   console.log("devuelve oracle: " +response.data)
+       
           console.log("devuelve oracle: " +response.data.signedOracle)
           signedTxn = response.data.signedOracle
 
@@ -399,51 +347,17 @@ async function call_application()
     // creatorMnemonic = "genuine glad cheap pulp vendor forward teach cart cruise creek reopen orphan loyal onion where between fringe piece curtain horror era output design about find";
     // // DV4WM2KPLIRVK6V5DEGX4JCCO4LOTYR6VBUCH7URTOG3QHSWP65343FNXM
     // let sender = algosdk.mnemonicToSecretKey(creatorMnemonic);
-    let gt_logicsig11 = `#pragma version 3
-    txn CloseRemainderTo
-    global ZeroAddress
-    ==
-    &&
-    txn RekeyTo
-    global ZeroAddress
-    ==
-    &&
-    txn Fee
-    int 1000
-    <=
-    &&
-    return
-    `;
 
-    let gt_logicsig2_anterior = `#pragma version 5
-    int 1
-    return
-    `
 
-    let gt_logicsig2 = `#pragma version 5
-    txn CloseRemainderTo
-    global ZeroAddress
-    ==
-    txn RekeyTo
-    global ZeroAddress
-    ==
-    &&
-    txn Fee
-    int 1000
-    <=
-    &&
-    return
-    `
-
-    compilation = await compileProgram(algodClient, gt_logicsig2);
+    compilation = await compileProgram(algodClient, gt_logicsig);
     oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
     program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
     // args = null;
     // let lsig = algosdk.makeLogicSig(program_array, args);
-    gt_lsig2 = new algosdk.LogicSigAccount(program_array, args);
-    console.log('GT_logicsic2_account: '+gt_lsig2.address())
+    gt_lsig = new algosdk.LogicSigAccount(program_array, args);
+    console.log('GT_logicsic_account: '+gt_lsig.address())
 
-    await callApp(algodClient, gt_lsig2, appId, args);
+    await callApp(algodClient, gt_lsig, appId, args);
 
     }
     catch (err) {
@@ -653,7 +567,7 @@ int 1
     }
 }
 
-async function optIn() {
+async function optInApp() {
     try {
 
     const algodToken = '';
@@ -708,8 +622,62 @@ async function optIn() {
 }
 
 
+
+let gt_logicsig = `#pragma version 5
+txn CloseRemainderTo
+global ZeroAddress
+==
+txn RekeyTo
+global ZeroAddress
+==
+&&
+txn Fee
+int 1000
+<=
+&&
+return
+`;
+
+
+
+let ct_logicsig = `#pragma version 5
+txn TypeEnum
+int pay
+==
+global GroupSize
+int 4
+==
+&&
+txn CloseRemainderTo
+global ZeroAddress
+==
+&&
+txn RekeyTo
+global ZeroAddress
+==
+&&
+txn Fee
+int 1000
+<=
+&&
+gtxn 1 Sender
+addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
+==
+&&
+gtxn 0 Amount
+int 10000
+*
+gtxn 1 Note
+btoi
+/
+txn Amount
+>=
+&&
+return
+`;
+
 // firstTransaction()
 logicSigcTransaction() //este solo habilitado funciona perfecto 
 // application_create() // crea perfectamente el contrato
 //   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
-// optIn() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
+// optInApp() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
