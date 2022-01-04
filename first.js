@@ -160,28 +160,6 @@ async function logicSigcTransaction() {
         const algodPort = '';
         
         let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
-        // tomo el teal compilado del oracle
-        // cat logicsigOracle.teal.tok | base64 para generar el programa en base64
-        // oracleProgramReferenceProgramBytesReplace = Buffer.from("ASADAegHBSYBIM5AXoIg4wguvqNz/cSzrushKftw0p2NFXgq73Ht5ZNSMRAiEjIEIhIQMQcoEhAxCTIDEhAxASMOEDEFFyQSEA==", "base64");
-        // // oracleProgramReferenceProgramBytesReplace = Buffer.from("ASAEAZChDwUGJgEgK+3MznfMOKICd7ZFpboZ5Q4jRSP/getreWQoYDjPqqMxECISMQEyABIQMQgjDxAxBygSEDEJMgMSEDEFFyQSEDEEJQ4Q", "base64");
-                                                                    
-        // console.log('antes de inyectar:')
-        // console.log(oracleProgramReferenceProgramBytesReplace)
-        
-        // // let referenceOffsets = [ /*Price*/ 7, /*LastValid*/ 8];
-        // // let injectionVector =  [8, 9];
-        // // let injectionTypes = [templates.valTypes.INT, templates.valTypes.INT];
-        // let referenceOffsets = [ /*Price*/ 6];
-        // let injectionVector =  [8];
-        // let injectionTypes = [templates.valTypes.INT];
-        
-        // var buff = templates.inject (oracleProgramReferenceProgramBytesReplace, referenceOffsets, injectionVector, injectionTypes);
-        // // var buff = templates.inject (oracleProgramReferenceProgramBytesReplace, referenceOffsets, injectionVector);
-        // console.log('despues de inyectar:')
-        // console.log(buff)
-
-        // let program = new Uint8Array (buff); 
-        // // let program = Buffer.from("AyACAegHJgEgzkBegiDjCC6+o3P9xLOu6yEp+3DSnY0VeCrvce3lk1IxECISMgQiEhAxBygSEDEJMgMSEDEgMgMSEDEBIw4QQw==", "base64");  // let program = new Uint8Array(Buffer.from("AyACAegHJgEgzkBegiDjCC6+o3P9xLOu6yEp+3DSnY0VeCrvce3lk1IxECISMgQiEhAxBygSEDEJMgMSEDEgMgMSEDEBIw4QQw==", "base64"));
 
 
         const status = (await algodClient.status().do());
@@ -192,56 +170,11 @@ async function logicSigcTransaction() {
         console.log('lastRound: '+status["last-round"])  
         lastvalid = status["last-round"] + 10
 
-let oracleTemplate = `
-#pragma version 3
-txn TypeEnum
-int pay
-==
-global GroupSize
-int 3
-==
-&&
-txn Receiver
-addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
-==
-&&
-txn CloseRemainderTo
-global ZeroAddress
-==
-&&
-txn RekeyTo
-global ZeroAddress
-==
-&&
-txn Fee
-int 1000
-<=
-&&
-txn Note
-btoi
-int <exchange_rate>
-==
-&&
-txn LastValid
-int <lastvalid>
-<=
-&&
-return
-`;
 
-let gt_logicsig = `
-#pragma version 3
-txn TypeEnum
-int pay
-==
-global GroupSize
-int 3
-==
-&&
+let gt_logicsig = `#pragma version 5
 txn CloseRemainderTo
 global ZeroAddress
 ==
-&&
 txn RekeyTo
 global ZeroAddress
 ==
@@ -253,13 +186,14 @@ int 1000
 return
 `;
 
-let ct_logicsig = `
-#pragma version 3
+
+
+let ct_logicsig = `#pragma version 5
 txn TypeEnum
 int pay
 ==
 global GroupSize
-int 3
+int 4
 ==
 &&
 txn CloseRemainderTo
@@ -309,50 +243,6 @@ return
 
 
 
-
-
-        // oracle desde aca - se cambio por la llamada al backend
-
-        // oracleTemplate = oracleTemplate.replace("<exchange_rate>", parseInt("00025000"));    
-        // let program = oracleTemplate.replace("<lastvalid>", lastvalid); 
-        // console.log(program)
-        // compilation = await compileProgram(algodClient, program);
-        // //generate unique filename
-        // // let uintAr = _base64ToArrayBuffer(compilation.result);
-        // console.log(compilation.result)
-        // oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
-        // console.log(oracleProgramReferenceProgramBytesReplace)
-        // program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
-        // args = null;
-        // // let lsig = algosdk.makeLogicSig(program_array, args);
-        // oracle_lsig = new algosdk.LogicSigAccount(program_array, args);
-        // console.log('Oracle_logicsic_account: '+oracle_lsig.address())
-
-        // let oracle_sk = algosdk.mnemonicToSecretKey("popular sauce pride off fluid you come coffee display list stadium blood scout bargain segment laptop hand employ demise grass sign adult want abstract exhibit")
-        // console.log(oracle_sk.addr.toString())
-        // oracle_lsig.sign(oracle_sk.sk);
-
-        // let accountInfo = await algodClient.accountInformation(oracle_sk.addr).do();
-        // // let accountInfo = await algodClient.accountInformation(myAccount2).do();
-        // // console.log(accountInfo);
-        // console.log("Account balance: %d microAlgos", accountInfo.amount);
-        // let startingAmount = accountInfo.amount;
-        
-         // fin oracle desde aca - se cambio por la llamada al backend
-
-
-        //  const response =  await fetch('http://localhost:8080/oracle', {
-        //     method: 'POST',
-        //     headers: {
-        //       "Access-Control-Allow-Origin": "*",
-        //       'Accept': 'application/json',
-        //       'Content-Type': 'application/json',
-        //     },
-        //     // body: JSON.stringify({
-        //     //   param1: encoded1,
-        //     //   // secondParam: 'yourOtherValue',
-        //     // })
-        //   });
         await keypress();
 
         const response =  await axios.post('http://localhost:8080/oracle', {
@@ -390,19 +280,6 @@ return
           console.log(oracle_lsig)
           console.log(oracle_lsig.address())
         
-        //   console.log('Oracle_logicsic_account: '+oracle_lsig.address())
-          
-        //   console.log("oracle  signed address:")
-        //   var string = new TextDecoder().decode(oracle_lsig.lsig.sig);
-        //   console.log(string)
-            // let decodedLsig = signed.sig;
-            // anda esto de abajo 2 lineas
-        //   oracle_lsig = new algosdk.LogicSigAccount(signed.lsig.logic, signed.lsig.args);
-        //   console.log('Oracle_logicsic_account: '+oracle_lsig.address())
-
-
-        //   sigOracle = algosdk.makeLogicSig(decodedLsig.l, decodedLsig.arg);
-        //   await algodClient.sendRawTransaction(signed.blob).do();
          
 
          // Construct the transaction
@@ -412,73 +289,77 @@ return
          params.flatFee = true;
          params.lastRound = params.firstRound + 5
 
-         console.log(params)
+        //  console.log(params)
+         console.log('Acaba de llamar al Oracle ... esperando para procesar TXN')
          await keypress();
- 
-         // receiver defined as TestNet faucet address 
-         receiver = "HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA";
-         const enc = new TextEncoder();
-        //  const note = enc.encode("5");
-         tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales
-         note = algosdk.encodeUint64(tipoCambio);
-         let amount = 0;
-         let closeout = receiver; //closeRemainderTo
-        //  let sender = oracle_sk.addr.toString();
-        let sender = "YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4";
-         
         
-         // oracle tx1
-         let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, sender, amount, undefined, note, params);
+         
+         let enc = new TextEncoder();
 
-
-           // sign transaction with logic signature
-
-            // const lstx = algosdk.signLogicSigTransactionObject(txn1, lsig);
-
-            // send transaction (it should fail because of the logic signature, which returns 0)
-            // console.log('Sending transaction...');
-            // tx = await algodClient.sendRawTransaction(lstx.blob).do();
-            // console.log(tx);
-
+        // GT paga a CT tx0
+            tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales esto deberia venir de la API del oracle
             assetTxfer = 2
             assetTxnferMicroalgo = assetTxfer*1000000
             console.log('se van a enviar 2 assets ')
-            // tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales
             console.log("tipo cambio:" + tipoCambio)
             envioAlgos = (assetTxnferMicroalgo*tipoCambio/10000)
-            // console.log("aplico cambio: "+aplicoCambio)
-            // envioAlgosRedondeo = Math.ceil(aplicoCambio)
-            // envioAlgos = aplicoCambio*1000000;
             console.log("envioAlgos: "+envioAlgos)
 
-        // GT paga a CT tx0
-        sender = gt_lsig.address(); // Green Treassury Account
-        receiver = ct_lsig.address(); // CT account
-        // amount = 2000000;
-        amount = envioAlgos;
-        note = enc.encode("GT paga");
-        let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+            sender = gt_lsig.address(); // Green Treassury Account
+            receiver = ct_lsig.address(); // CT account
+            // amount = 2000000;
+            amount = envioAlgos;
+            note = enc.encode("GT paga");
+            let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+
+        // oracle tx1
+            note = algosdk.encodeUint64(tipoCambio);
+            amount = 0;
+            // let closeout = receiver; //closeRemainderTo
+            //  let sender = oracle_sk.addr.toString();
+            sender = "YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4";
+         
+            let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, sender, amount, undefined, note, params);
 
         // CT paga a GT tx2
-        sender = ct_lsig.address(); // Green Treassury Account
-        receiver = gt_lsig.address() // GT account
-        // amount = 1000000;
-        amount = assetTxnferMicroalgo;
-        note = enc.encode("CT paga");
-        let txn2 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+            sender = ct_lsig.address(); // Green Treassury Account
+            receiver = gt_lsig.address() // GT account
+            // amount = 1000000;
+            amount = assetTxnferMicroalgo;
+            note = enc.encode("CT paga");
+            let txn2 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
 
-          // assign group id to transactions
-        algosdk.assignGroupID([txn0, txn1, txn2]);
+
+        // GT llama a APP para restar offset tx3
+        
+            // let arg0 = enc.encode("payment");
+            let arg0 = enc.encode("offset");
+            
+            appArgs = [arg0]
+            // appId = 56326408
+            index = 56491067 //appId
+            sender = gt_lsig.address(); // Green Treassury Account;
+
+            // create unsigned transaction
+            let txn3 = algosdk.makeApplicationNoOpTxn(sender, params, index, appArgs)
+            let txId3 = txn3.txID().toString();
+        
+    
+
+       
+
+        // assign group id to transactions
+             algosdk.assignGroupID([txn0, txn1, txn2, txn3]);
         
         // sign transactions
-        // const stxn0 = txn0.signTxn(gt_lsig.sk);
-        const stxn0 = algosdk.signLogicSigTransactionObject(txn0, gt_lsig);
-        const stxn1 = algosdk.signLogicSigTransactionObject(txn1, oracle_lsig);
-        const stxn2 = algosdk.signLogicSigTransactionObject(txn2, ct_lsig);
+            const stxn0 = algosdk.signLogicSigTransactionObject(txn0, gt_lsig);
+            const stxn1 = algosdk.signLogicSigTransactionObject(txn1, oracle_lsig);
+            const stxn2 = algosdk.signLogicSigTransactionObject(txn2, ct_lsig);
+            const stxn3 = algosdk.signLogicSigTransactionObject(txn3, gt_lsig);
 
         // send transactions (note that the accounts need to be funded for this to work)
         console.log('Sending transactions...');
-        const { txId } = await algodClient.sendRawTransaction([stxn0.blob, stxn1.blob, stxn2.blob]).do();
+        const { txId } = await algodClient.sendRawTransaction([stxn0.blob, stxn1.blob, stxn2.blob, stxn3.blob]).do();
 
         console.log("atomic:" + txId)
 
@@ -495,5 +376,340 @@ return
         }
 }
 
+
+async function call_application()
+{
+
+    try {
+    const algodToken = '';
+    const algodServer = "https://api.testnet.algoexplorer.io";
+    const algodPort = '';
+    
+    let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
+    let encoder = new TextEncoder();
+    // let arg0 = encoder.encode("payment");
+    let arg0 = encoder.encode("offset");
+    
+    args = [arg0]
+    // appId = 56326408
+    appId = 56491067
+    // creatorMnemonic = "fork motor sudden garment symbol auto abuse addict ski sing poverty any lecture laundry win dilemma junior bonus harbor chief dinner basket tape absent spot";
+    // GMOOLGEIV6MD43MNWEAAUBGYEESEKY4MIRATZ22PTUGH6FIP5DTLKEBEEY
+
+    // creatorMnemonic = "genuine glad cheap pulp vendor forward teach cart cruise creek reopen orphan loyal onion where between fringe piece curtain horror era output design about find";
+    // // DV4WM2KPLIRVK6V5DEGX4JCCO4LOTYR6VBUCH7URTOG3QHSWP65343FNXM
+    // let sender = algosdk.mnemonicToSecretKey(creatorMnemonic);
+    let gt_logicsig11 = `#pragma version 3
+    txn CloseRemainderTo
+    global ZeroAddress
+    ==
+    &&
+    txn RekeyTo
+    global ZeroAddress
+    ==
+    &&
+    txn Fee
+    int 1000
+    <=
+    &&
+    return
+    `;
+
+    let gt_logicsig2_anterior = `#pragma version 5
+    int 1
+    return
+    `
+
+    let gt_logicsig2 = `#pragma version 5
+    txn CloseRemainderTo
+    global ZeroAddress
+    ==
+    txn RekeyTo
+    global ZeroAddress
+    ==
+    &&
+    txn Fee
+    int 1000
+    <=
+    &&
+    return
+    `
+
+    compilation = await compileProgram(algodClient, gt_logicsig2);
+    oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+    program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+    // args = null;
+    // let lsig = algosdk.makeLogicSig(program_array, args);
+    gt_lsig2 = new algosdk.LogicSigAccount(program_array, args);
+    console.log('GT_logicsic2_account: '+gt_lsig2.address())
+
+    await callApp(algodClient, gt_lsig2, appId, args);
+
+    }
+    catch (err) {
+        console.log("err", err);
+    }
+}
+// call application 
+async function callApp(client, account, index, appArgs) {
+    // define sender
+    sender = account.address();
+
+    // get node suggested parameters
+    let params = await client.getTransactionParams().do();
+    // comment out the next two lines to use suggested fee
+    params.fee = 1000;
+    params.flatFee = true;
+
+    // create unsigned transaction
+    let txn = algosdk.makeApplicationNoOpTxn(sender, params, index, appArgs)
+    let txId = txn.txID().toString();
+
+    // Sign the transaction
+    // let signedTxn = txn.signTxn(account.sk);
+    const signedTxn = algosdk.signLogicSigTransactionObject(txn, account);
+    
+    console.log("Signed transaction with txID: %s", txId);
+   
+
+    // Submit the transaction
+    // await client.sendRawTransaction(signedTxn).do();
+    await client.sendRawTransaction(signedTxn.blob).do();
+
+    // Wait for confirmation
+    await waitForConfirmation(client, txId,4);
+
+    // display results
+    let transactionResponse = await client.pendingTransactionInformation(txId).do();
+    console.log("Called app-id:",transactionResponse['txn']['txn']['apid'])
+    // if (transactionResponse['global-state-delta'] !== undefined ) {
+    //     console.log("Global State updated:",transactionResponse['global-state-delta']);
+    // }
+    // if (transactionResponse['local-state-delta'] !== undefined ) {
+    //     console.log("Local State updated:",transactionResponse['local-state-delta']);
+    // }
+}
+
+// create new application
+async function createApp(client, creatorAccount, approvalProgram, clearProgram, localInts, localBytes, globalInts, globalBytes) {
+    // define sender as creator
+    sender = creatorAccount.addr;
+
+    // declare onComplete as NoOp
+    onComplete = algosdk.OnApplicationComplete.NoOpOC;
+
+	// get node suggested parameters
+    let params = await client.getTransactionParams().do();
+    // comment out the next two lines to use suggested fee
+    params.fee = 1000;
+    params.flatFee = true;
+   
+   // call application with arguments
+   // paso 300 como entero encodeado en uint64 para que convierta bien luego
+    let ts = algosdk.encodeUint64(300);
+    console.log(ts)
+    let app_args = [];
+    app_args.push(new Uint8Array(Buffer.from(ts)));
+ 
+    // create unsigned transaction
+    let txn = algosdk.makeApplicationCreateTxn(sender, params, onComplete, 
+                                            approvalProgram, clearProgram, 
+                                            localInts, localBytes, globalInts, globalBytes,app_args);
+    let txId = txn.txID().toString();
+
+    // Sign the transaction
+    let signedTxn = txn.signTxn(creatorAccount.sk);
+    console.log("Signed transaction with txID: %s", txId);
+    
+
+    // Submit the transaction
+    await client.sendRawTransaction(signedTxn).do();
+
+    // Wait for confirmation
+    await waitForConfirmation(client, txId,4);
+
+    // display results
+    let transactionResponse = await client.pendingTransactionInformation(txId).do();
+    let appId = transactionResponse['application-index'];
+    console.log("Created new app-id: ",appId);
+    console.log("Stateful address: "+algosdk.getApplicationAddress(appId))
+    return appId;
+}
+
+async function application_create() {
+
+    try {
+
+        const algodToken = '';
+        const algodServer = "https://api.testnet.algoexplorer.io";
+        const algodPort = '';
+        
+        let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
+
+
+        const status = (await algodClient.status().do());
+        if (status === undefined) {
+            throw new Error("Unable to get node status");
+        }
+    
+        console.log('lastRound: '+status["last-round"]) 
+        creatorMnemonic = "fork motor sudden garment symbol auto abuse addict ski sing poverty any lecture laundry win dilemma junior bonus harbor chief dinner basket tape absent spot";
+        // GMOOLGEIV6MD43MNWEAAUBGYEESEKY4MIRATZ22PTUGH6FIP5DTLKEBEEY
+
+    // get accounts from mnemonic
+    let creatorAccount = algosdk.mnemonicToSecretKey(creatorMnemonic);
+    // let userAccount = algosdk.mnemonicToSecretKey(userMnemonic);
+   
+
+
+        // declare application state storage (immutable)
+localInts = 1;
+localBytes = 1;
+globalInts = 1;
+globalBytes = 0;
+
+// user declared approval program (initial)
+var approvalProgramSourceInitial = `#pragma version 5
+txn ApplicationID
+int 0
+==
+bnz main_l12
+txn OnCompletion
+int NoOp
+==
+bnz main_l9
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l8
+txn OnCompletion
+int UpdateApplication
+==
+bnz main_l7
+txn OnCompletion
+int OptIn
+==
+txn OnCompletion
+int CloseOut
+==
+||
+bnz main_l6
+err
+main_l6:
+int 0
+return
+main_l7:
+int 1
+return
+main_l8:
+int 1
+return
+main_l9:
+txna ApplicationArgs 0
+byte "offset"
+==
+bnz main_l11
+err
+main_l11:
+byte "co2"
+byte "co2"
+app_global_get
+int 10
+-
+app_global_put
+int 1
+return
+main_l12:
+byte "co2"
+txna ApplicationArgs 0
+btoi
+app_global_put
+int 1
+return
+`;
+
+
+ 
+// declare clear state program source
+clearProgramSource = `#pragma version 2
+int 1
+`;
+
+
+    // compile programs 
+    let approvalProgram_aux = await compileProgram(algodClient, approvalProgramSourceInitial);
+    let approvalProgram = new Uint8Array(Buffer.from(approvalProgram_aux.result, "base64"));
+    let clearProgram_aux = await compileProgram(algodClient, clearProgramSource);
+    let clearProgram = new Uint8Array(Buffer.from(clearProgram_aux.result, "base64"));
+
+    // create new application
+    let appId = await createApp(algodClient, creatorAccount, approvalProgram, clearProgram, localInts, localBytes, globalInts, globalBytes);
+
+
+
+    }
+    catch (err) {
+        console.log("err", err);
+    }
+}
+
+async function optIn() {
+    try {
+
+    const algodToken = '';
+    const algodServer = "https://api.testnet.algoexplorer.io";
+    const algodPort = '';
+    
+    let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
+
+     optinMnemonic = "fork motor sudden garment symbol auto abuse addict ski sing poverty any lecture laundry win dilemma junior bonus harbor chief dinner basket tape absent spot";
+    // GMOOLGEIV6MD43MNWEAAUBGYEESEKY4MIRATZ22PTUGH6FIP5DTLKEBEEY
+    let optinAccount = algosdk.mnemonicToSecretKey(optinMnemonic);
+    // define sender
+    sender = optinAccount.addr;
+
+    // get node suggested parameters
+    let params = await algodClient.getTransactionParams().do();
+    // comment out the next two lines to use suggested fee
+    params.fee = 1000;
+    params.flatFee = true;
+
+    const optInTxn = algosdk.makeApplicationOptInTxn(
+        optinAccount.addr,
+        params,
+        56326408
+      );
+    
+      // send the transaction
+      console.log('Sending application opt in transaction.');
+      const signedOptInTxn = optInTxn.signTxn(optinAccount.sk);
+      const { txId: optInTxId } = await algodClient
+        .sendRawTransaction(signedOptInTxn)
+        .do();
+
+    
+
+    // Wait for confirmation
+    await waitForConfirmation(client, txId,4);
+
+    // display results
+    let transactionResponse = await algodClient.pendingTransactionInformation(txId).do();
+    console.log("Called app-id:",transactionResponse['txn']['txn']['apid'])
+    // if (transactionResponse['global-state-delta'] !== undefined ) {
+    //     console.log("Global State updated:",transactionResponse['global-state-delta']);
+    // }
+    // if (transactionResponse['local-state-delta'] !== undefined ) {
+    //     console.log("Local State updated:",transactionResponse['local-state-delta']);
+    // }
+                }
+                catch (err) {
+                    console.log("err", err);
+                }
+}
+
+
 // firstTransaction()
-logicSigcTransaction()
+logicSigcTransaction() //este solo habilitado funciona perfecto 
+// application_create() // crea perfectamente el contrato
+//   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
+// optIn() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 

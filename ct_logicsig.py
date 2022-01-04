@@ -13,7 +13,7 @@ def greenTreasury_account(receiver):
     """
 
     is_payment = Txn.type_enum() == TxnType.Payment
-    is_single_tx = Global.group_size() == Int(3)
+    is_single_tx = Global.group_size() == Int(4)
     # is_correct_receiver = Txn.receiver() == Addr(receiver)
     no_close_out_addr = Txn.close_remainder_to() == Global.zero_address()
     no_rekey_addr = Txn.rekey_to() == Global.zero_address()
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     program = greenTreasury_account(
         "ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM"
     )
-    print(compileTeal(program, mode=Mode.Signature, version=3))
+    print(compileTeal(program, mode=Mode.Signature, version=5))
 
 
 

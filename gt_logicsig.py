@@ -12,8 +12,8 @@ def greenTreasury_account(receiver):
         receiver (str): Base 32 Algorand address of the receiver.
     """
 
-    is_payment = Txn.type_enum() == TxnType.Payment
-    is_single_tx = Global.group_size() == Int(3)
+    # is_payment = Txn.type_enum() == TxnType.Payment
+    # is_single_tx = Global.group_size() == Int(3)
     # is_correct_receiver = Txn.receiver() == Addr(receiver)
     no_close_out_addr = Txn.close_remainder_to() == Global.zero_address()
     no_rekey_addr = Txn.rekey_to() == Global.zero_address()
@@ -22,8 +22,8 @@ def greenTreasury_account(receiver):
     # tx_last_valid = Txn.last_valid() <= Int(4)
 
     return And(
-        is_payment,
-        is_single_tx,
+        # is_payment,
+        # is_single_tx,
         # is_correct_receiver,
         no_close_out_addr,
         no_rekey_addr,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     program = greenTreasury_account(
         "ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM"
     )
-    print(compileTeal(program, mode=Mode.Signature, version=3))
+    print(compileTeal(program, mode=Mode.Signature, version=5))
 
 
 
