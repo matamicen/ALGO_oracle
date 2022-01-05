@@ -621,7 +621,88 @@ async function optInApp() {
                 }
 }
 
+async function optinInAsset(assetId)
+{
 
+    try {
+
+        const algodToken = '';
+        const algodServer = "https://api.testnet.algoexplorer.io";
+        const algodPort = '';
+        
+        let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
+
+        // get node suggested parameters
+        let suggestedParams = await algodClient.getTransactionParams().do();
+        // comment out the next two lines to use suggested fee
+        suggestedParams.fee = 1000;
+        suggestedParams.flatFee = true;
+
+        console.log(suggestedParams)
+        
+        amount = 0;
+
+    // gt_logicsig ACCOUNT
+
+        //     compilation = await compileProgram(algodClient, gt_logicsig);
+        //     oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+        //     program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+        //     args = null;
+    
+        // gt_lsig = new algosdk.LogicSigAccount(program_array, args);
+        // console.log('GT_logicsic_account: '+gt_lsig.address())
+
+        // assetIndex = parseInt(assetId)
+        //     // create the asset accept transaction
+        // const transactionOptions = {
+        //     from: gt_lsig.address(),
+        //     to: gt_lsig.address(),
+        //     assetIndex,
+        //     amount,
+        //     suggestedParams,
+        // };
+
+
+     // ct_logicsig ACCOUNT
+
+        let compilation = await compileProgram(algodClient, ct_logicsig);
+        oracleProgramReferenceProgramBytesReplace = Buffer.from(compilation.result, "base64");
+        let program_array = new Uint8Array (oracleProgramReferenceProgramBytesReplace);
+        let args = null;
+    
+        ct_lsig = new algosdk.LogicSigAccount(program_array, args);
+        console.log('CT_logicsic_account: '+ct_lsig.address())
+
+        assetIndex = parseInt(assetId)
+            // create the asset accept transaction
+        const transactionOptions = {
+            from: ct_lsig.address(),
+            to: ct_lsig.address(),
+            assetIndex,
+            amount,
+            suggestedParams,
+        };
+
+
+  const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
+    transactionOptions
+  );
+
+  // sign the transaction
+  
+//   const stxn0 = algosdk.signLogicSigTransactionObject(txn, gt_lsig);
+     const stxn0 = algosdk.signLogicSigTransactionObject(txn, ct_lsig);
+
+  console.log('OptIn ASA id: '+assetIndex);
+      const { txId } = await algodClient.sendRawTransaction(stxn0.blob).do();
+
+      console.log("Txn:" + txId)
+
+    }catch(err) {  
+         console.log(err)
+
+    }
+}
 
 let gt_logicsig = `#pragma version 5
 txn CloseRemainderTo
@@ -638,9 +719,17 @@ int 1000
 return
 `;
 
-
-
 let ct_logicsig = `#pragma version 5
+global GroupSize
+int 1
+==
+bnz main_l4
+global GroupSize
+int 4
+==
+bnz main_l3
+err
+main_l3:
 txn TypeEnum
 int pay
 ==
@@ -673,11 +762,30 @@ btoi
 txn Amount
 >=
 &&
+assert
+int 1
 return
-`;
+main_l4:
+txn TypeEnum
+int axfer
+==
+txn AssetAmount
+int 0
+==
+&&
+txn Sender
+txn AssetReceiver
+==
+&&
+assert
+int 1
+return
+`
+
 
 // firstTransaction()
 logicSigcTransaction() //este solo habilitado funciona perfecto 
 // application_create() // crea perfectamente el contrato
 //   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
 // optInApp() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
+// optinInAsset("10458941") // USDC Testnet ASA ID 10458941  
