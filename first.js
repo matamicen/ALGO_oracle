@@ -509,72 +509,72 @@ localBytes = 1;
 globalInts = 1;
 globalBytes = 0;
 
-// user declared approval program (initial)
-var approvalProgramSourceInitial = `#pragma version 5
-txn ApplicationID
-int 0
-==
-bnz main_l12
-txn OnCompletion
-int NoOp
-==
-bnz main_l9
-txn OnCompletion
-int DeleteApplication
-==
-bnz main_l8
-txn OnCompletion
-int UpdateApplication
-==
-bnz main_l7
-txn OnCompletion
-int OptIn
-==
-txn OnCompletion
-int CloseOut
-==
-||
-bnz main_l6
-err
-main_l6:
-int 0
-return
-main_l7:
-int 1
-return
-main_l8:
-int 1
-return
-main_l9:
-txna ApplicationArgs 0
-byte "offset"
-==
-bnz main_l11
-err
-main_l11:
-byte "co2"
-byte "co2"
-app_global_get
-int 10
--
-app_global_put
-int 1
-return
-main_l12:
-byte "co2"
-txna ApplicationArgs 0
-btoi
-app_global_put
-int 1
-return
-`;
+// // user declared approval program (initial)
+// var approvalProgramSourceInitial = `#pragma version 5
+// txn ApplicationID
+// int 0
+// ==
+// bnz main_l12
+// txn OnCompletion
+// int NoOp
+// ==
+// bnz main_l9
+// txn OnCompletion
+// int DeleteApplication
+// ==
+// bnz main_l8
+// txn OnCompletion
+// int UpdateApplication
+// ==
+// bnz main_l7
+// txn OnCompletion
+// int OptIn
+// ==
+// txn OnCompletion
+// int CloseOut
+// ==
+// ||
+// bnz main_l6
+// err
+// main_l6:
+// int 0
+// return
+// main_l7:
+// int 1
+// return
+// main_l8:
+// int 1
+// return
+// main_l9:
+// txna ApplicationArgs 0
+// byte "offset"
+// ==
+// bnz main_l11
+// err
+// main_l11:
+// byte "co2"
+// byte "co2"
+// app_global_get
+// int 10
+// -
+// app_global_put
+// int 1
+// return
+// main_l12:
+// byte "co2"
+// txna ApplicationArgs 0
+// btoi
+// app_global_put
+// int 1
+// return
+// `;
 
 
  
-// declare clear state program source
-clearProgramSource = `#pragma version 2
-int 1
-`;
+// // declare clear state program source
+// clearProgramSource = `#pragma version 2
+// int 1
+// `;
 
 
     // compile programs 
@@ -731,6 +731,63 @@ async function optinInAsset(assetId)
     }
 }
 
+async function updateProgram()
+{
+    try {
+
+        const algodToken = '';
+        const algodServer = "https://api.testnet.algoexplorer.io";
+        const algodPort = '';
+        
+        let algodClient = new algosdk.Algodv2(algodToken, algodServer,algodPort);
+        creatorMnemonic = "fork motor sudden garment symbol auto abuse addict ski sing poverty any lecture laundry win dilemma junior bonus harbor chief dinner basket tape absent spot";
+        // GMOOLGEIV6MD43MNWEAAUBGYEESEKY4MIRATZ22PTUGH6FIP5DTLKEBEEY
+
+        // get accounts from mnemonic
+        let creatorAccount = algosdk.mnemonicToSecretKey(creatorMnemonic);
+
+                // get node suggested parameters
+        let suggestedParams = await algodClient.getTransactionParams().do();
+        // comment out the next two lines to use suggested fee
+        suggestedParams.fee = 1000;
+        suggestedParams.flatFee = true;
+
+        // compile programs 
+        let approvalProgram_aux = await compileProgram(algodClient, approvalProgramSourceInitial);
+        let approvalProgram = new Uint8Array(Buffer.from(approvalProgram_aux.result, "base64"));
+        let clearProgram_aux = await compileProgram(algodClient, clearProgramSource);
+        let clearProgram = new Uint8Array(Buffer.from(clearProgram_aux.result, "base64"));
+
+
+
+    txn = algosdk.makeApplicationUpdateTxn(creatorAccount.addr,suggestedParams,56491067,approvalProgram,clearProgram)
+    let txId = txn.txID().toString();
+    // Sign the transaction
+    let signedTxn = txn.signTxn(creatorAccount.sk);
+    console.log("Signed transaction with txID: %s", txId);
+    
+
+    // Submit the transaction
+    await algodClient.sendRawTransaction(signedTxn).do();
+
+    // Wait for confirmation
+    await waitForConfirmation(algodClient, txId,4);
+
+    // display results
+    let transactionResponse = await algodClient.pendingTransactionInformation(txId).do();
+    // console.log(transactionResponse)
+    // let appId = transactionResponse['application-index'];
+    // console.log("Updated app-id: ", ['transactionResponse.txn.txn.apid'] + "in round: "+ transactionResponse.confirmed-round);
+    console.log('App updated in round: '+ transactionResponse['confirmed-round']);
+    }
+    catch(err) {  
+    console.log(err)
+
+}
+
+
+}
+
 let gt_logicsig = `#pragma version 5
 txn CloseRemainderTo
 global ZeroAddress
@@ -817,14 +874,80 @@ int 1
 return
 `
 
+// user declared approval program (initial)
+let approvalProgramSourceInitial = `#pragma version 5
+txn ApplicationID
+int 0
+==
+bnz main_l12
+txn OnCompletion
+int NoOp
+==
+bnz main_l9
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l8
+txn OnCompletion
+int UpdateApplication
+==
+bnz main_l7
+txn OnCompletion
+int OptIn
+==
+txn OnCompletion
+int CloseOut
+==
+||
+bnz main_l6
+err
+main_l6:
+int 0
+return
+main_l7:
+int 1
+return
+main_l8:
+int 1
+return
+main_l9:
+txna ApplicationArgs 0
+byte "offset"
+==
+bnz main_l11
+err
+main_l11:
+byte "co2"
+byte "co2"
+app_global_get
+int 5
+-
+app_global_put
+int 1
+return
+main_l12:
+byte "co2"
+txna ApplicationArgs 0
+btoi
+app_global_put
+int 1
+return
+`;
 
+
+ 
+// declare clear state program source
+let clearProgramSource = `#pragma version 2
+int 2
+`;
 
 
 
 // firstTransaction()
-logicSigcTransaction() //este solo habilitado funciona perfecto 
+// logicSigcTransaction() //este solo habilitado funciona perfecto 
 // application_create() // crea perfectamente el contrato
 //   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
 // optInApp() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
 // optinInAsset("10458941") // USDC Testnet ASA ID 10458941  
 // optinInAsset("56872718") // CO2 Testnet ASA ID 56872718
+updateProgram();
