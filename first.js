@@ -260,8 +260,8 @@ async function logicSigcTransaction() {
             note = enc.encode("GT paga");
             suggestedParams = params;
             // let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
-            assetIndex = parseInt("10458941")
-            const transactionOptions = {
+            assetIndex = parseInt("10458941") // USDC on testnet
+            transactionOptions = {
                 from: sender,
                 to: receiver,
                 assetIndex,
@@ -288,9 +288,22 @@ async function logicSigcTransaction() {
             receiver = gt_lsig.address() // GT account
             // amount = 1000000;
             amount = assetTxnferMicroalgo;
-            note = enc.encode("CT paga");
-            let txn2 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
-
+            // note = enc.encode("CT paga");
+            // let txn2 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+            suggestedParams = params;
+            assetIndex = parseInt("56872718") // co2 on testnet
+            transactionOptions = {
+                from: sender,
+                to: receiver,
+                assetIndex,
+                amount,
+                suggestedParams,
+            };
+    
+    
+            let txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
+                transactionOptions
+            );
 
         // GT llama a APP para restar offset tx3
         
@@ -745,7 +758,7 @@ bnz main_l3
 err
 main_l3:
 txn TypeEnum
-int pay
+int axfer
 ==
 global GroupSize
 int 4
@@ -773,11 +786,15 @@ int 10000
 gtxn 1 Note
 btoi
 /
-txn Amount
+txn AssetAmount
 >=
 &&
 gtxn 0 XferAsset
 int 10458941
+==
+&&
+txn XferAsset
+int 56872718
 ==
 &&
 assert
@@ -800,68 +817,8 @@ int 1
 return
 `
 
-let ct_logicsig_ant = `#pragma version 5
-global GroupSize
-int 1
-==
-bnz main_l4
-global GroupSize
-int 4
-==
-bnz main_l3
-err
-main_l3:
-txn TypeEnum
-int pay
-==
-global GroupSize
-int 4
-==
-&&
-txn CloseRemainderTo
-global ZeroAddress
-==
-&&
-txn RekeyTo
-global ZeroAddress
-==
-&&
-txn Fee
-int 1000
-<=
-&&
-gtxn 1 Sender
-addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
-==
-&&
-gtxn 0 Amount
-int 10000
-*
-gtxn 1 Note
-btoi
-/
-txn Amount
->=
-&&
-assert
-int 1
-return
-main_l4:
-txn TypeEnum
-int axfer
-==
-txn AssetAmount
-int 0
-==
-&&
-txn Sender
-txn AssetReceiver
-==
-&&
-assert
-int 1
-return
-`
+
+
 
 
 // firstTransaction()
@@ -870,3 +827,4 @@ logicSigcTransaction() //este solo habilitado funciona perfecto
 //   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
 // optInApp() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
 // optinInAsset("10458941") // USDC Testnet ASA ID 10458941  
+// optinInAsset("56872718") // CO2 Testnet ASA ID 56872718

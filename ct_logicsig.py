@@ -24,7 +24,7 @@ def greenTreasury_account(receiver):
     # # tx_last_valid = Txn.last_valid() <= Int(4)
     handle_four = Seq(
           Assert( 
-                And(Txn.type_enum() == TxnType.Payment,
+                And(Txn.type_enum() == TxnType.AssetTransfer,
                     Global.group_size() == Int(4),
                     # is_correct_receiver = Txn.receiver() == Addr(receiver)
                     Txn.close_remainder_to() == Global.zero_address(),
@@ -32,8 +32,9 @@ def greenTreasury_account(receiver):
                     Txn.fee() <= Int(1000),
                     Gtxn[1].sender() == Addr("YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4"),
                     # (Gtxn[0].amount() * Int(10000)) / Btoi(Gtxn[1].note()) >= Txn.amount()
-                    (Gtxn[0].asset_amount() * Int(10000)) / Btoi(Gtxn[1].note()) >= Txn.amount(),
-                    Gtxn[0].xfer_asset() == Int(10458941)
+                    (Gtxn[0].asset_amount() * Int(10000)) / Btoi(Gtxn[1].note()) >= Txn.asset_amount(),
+                    Gtxn[0].xfer_asset() == Int(10458941),
+                    Txn.xfer_asset() == Int(56872718)
                    )
           ), 
          Approve(),
