@@ -258,7 +258,21 @@ async function logicSigcTransaction() {
             // amount = 2000000;
             amount = envioAlgos;
             note = enc.encode("GT paga");
-            let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+            suggestedParams = params;
+            // let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
+            assetIndex = parseInt("10458941")
+            const transactionOptions = {
+                from: sender,
+                to: receiver,
+                assetIndex,
+                amount,
+                suggestedParams,
+            };
+    
+    
+            let txn0 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
+                transactionOptions
+            );
 
         // oracle tx1
             note = algosdk.encodeUint64(tipoCambio);
@@ -720,6 +734,73 @@ return
 `;
 
 let ct_logicsig = `#pragma version 5
+global GroupSize
+int 1
+==
+bnz main_l4
+global GroupSize
+int 4
+==
+bnz main_l3
+err
+main_l3:
+txn TypeEnum
+int pay
+==
+global GroupSize
+int 4
+==
+&&
+txn CloseRemainderTo
+global ZeroAddress
+==
+&&
+txn RekeyTo
+global ZeroAddress
+==
+&&
+txn Fee
+int 1000
+<=
+&&
+gtxn 1 Sender
+addr YEUJW5EPVUDGXYG67LWCL376GMHYKORJECSB2JAW5WY4ESL3CEHPRSEWX4
+==
+&&
+gtxn 0 AssetAmount
+int 10000
+*
+gtxn 1 Note
+btoi
+/
+txn Amount
+>=
+&&
+gtxn 0 XferAsset
+int 10458941
+==
+&&
+assert
+int 1
+return
+main_l4:
+txn TypeEnum
+int axfer
+==
+txn AssetAmount
+int 0
+==
+&&
+txn Sender
+txn AssetReceiver
+==
+&&
+assert
+int 1
+return
+`
+
+let ct_logicsig_ant = `#pragma version 5
 global GroupSize
 int 1
 ==
