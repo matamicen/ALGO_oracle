@@ -70,9 +70,11 @@ def approval_program():
         # App.globalPut(co2_key, Int(500)),
         Approve(),
     )
+    
 
     on_offset = Seq(
-        App.globalPut(co2_key, App.globalGet(co2_key) - Int(10)),
+        # App.globalPut(co2_key, App.globalGet(co2_key) - Int(10)),
+        App.globalPut(co2_key, App.globalGet(co2_key) - ( Gtxn[2].asset_amount() / Int(1000000)) ),
         Approve(),
     )
 
@@ -255,10 +257,10 @@ def clear_state_program():
 
 
 if __name__ == "__main__":
-    with open("auction_approval.teal", "w") as f:
+    with open("gt_stateful_approval.teal", "w") as f:
         compiled = compileTeal(approval_program(), mode=Mode.Application, version=5)
         f.write(compiled)
 
-    with open("auction_clear_state.teal", "w") as f:
+    with open("gt_stateful_clear_state.teal", "w") as f:
         compiled = compileTeal(clear_state_program(), mode=Mode.Application, version=5)
         f.write(compiled)

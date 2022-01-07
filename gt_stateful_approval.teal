@@ -43,7 +43,9 @@ main_l11:
 byte "co2"
 byte "co2"
 app_global_get
-int 10
+gtxn 2 AssetAmount
+int 1000000
+/
 -
 app_global_put
 int 1

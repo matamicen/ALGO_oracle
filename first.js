@@ -167,7 +167,7 @@ async function logicSigcTransaction() {
             throw new Error("Unable to get node status");
         }
     
-        console.log('lastRound: '+status["last-round"])  
+        // console.log('lastRound: '+status["last-round"])  
         lastvalid = status["last-round"] + 10
 
 
@@ -190,7 +190,7 @@ async function logicSigcTransaction() {
 
 
 
-
+        console.log('Presione una tecla para llamar al CT Oracle ...')
         await keypress();
 
         const response =  await axios.post('http://localhost:8080/oracle', {
@@ -207,26 +207,26 @@ async function logicSigcTransaction() {
           });
  
        
-          console.log("devuelve oracle: " +response.data.signedOracle)
+        //   console.log("devuelve oracle: " +response.data.signedOracle)
           signedTxn = response.data.signedOracle
 
         const signed = algosdk.decodeObj(new Uint8Array(Buffer.from(signedTxn, "base64")));
-        console.log("decoded:")
-          console.log(signed)
+        // console.log("decoded:")
+        //   console.log(signed)
         
           // este anda perfecto de abajo
           oracle_lsig = new algosdk.LogicSigAccount(signed.lsig.logic, signed.lsig.args);
        
        
-          console.log(oracle_lsig)
-          console.log('antes de signar')
-          console.log(oracle_lsig.address())
+        //   console.log(oracle_lsig)
+        //   console.log('antes de signar')
+        //   console.log(oracle_lsig.address())
           oracle_lsig.sigkey = signed.sigkey
         //   signed.lsig.sigkey
           oracle_lsig.lsig.sig = signed.lsig.sig
-          console.log('despues de signar')
-          console.log(oracle_lsig)
-          console.log(oracle_lsig.address())
+        //   console.log('despues de signar')
+        //   console.log(oracle_lsig)
+        //   console.log(oracle_lsig.address())
         
          
 
@@ -240,23 +240,25 @@ async function logicSigcTransaction() {
         //  console.log(params)
          console.log('Acaba de llamar al Oracle ... esperando para procesar TXN')
          await keypress();
+         console.log('')
         
          
          let enc = new TextEncoder();
 
         // GT paga a CT tx0
-            tipoCambio = parseInt("00025000") // tipo de cambio, 4 ultimos son decimales esto deberia venir de la API del oracle
+            // tipoCambio = parseInt("20000") // tipo de cambio, 4 ultimos son decimales esto deberia venir de la API del oracle
+            tipoCambio = parseInt(response.data.tipocambio) // tipo de cambio, 4 ultimos son decimales esto viene de la API del oracle
             assetTxfer = 2
             assetTxnferMicroalgo = assetTxfer*1000000
-            console.log('se van a enviar 2 assets ')
+            console.log('CT envia:'+ assetTxfer +' co2 tokens')
             console.log("tipo cambio:" + tipoCambio)
-            envioAlgos = (assetTxnferMicroalgo*tipoCambio/10000)
-            console.log("envioAlgos: "+envioAlgos)
+            envioUSDC = (assetTxnferMicroalgo*tipoCambio/10000)
+            console.log("GT paga microUSDC: "+envioUSDC)
 
             sender = gt_lsig.address(); // Green Treassury Account
             receiver = ct_lsig.address(); // CT account
             // amount = 2000000;
-            amount = envioAlgos;
+            amount = envioUSDC;
             note = enc.encode("GT paga");
             suggestedParams = params;
             // let txn0 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
@@ -336,11 +338,11 @@ async function logicSigcTransaction() {
         console.log('Sending transactions...');
         const { txId } = await algodClient.sendRawTransaction([stxn0.blob, stxn1.blob, stxn2.blob, stxn3.blob]).do();
 
-        console.log("atomic:" + txId)
+        console.log("transaccion: " + txId)
 
                 // wait for confirmation – timeout after 2 rounds
         console.log('Awaiting confirmation (this will take several seconds)...');
-        const roundTimeout = 2;
+        const roundTimeout = 4;
         await utils.waitForConfirmation(algodClient, txId, roundTimeout);
         console.log('Transactions successful.');
 
@@ -920,7 +922,9 @@ main_l11:
 byte "co2"
 byte "co2"
 app_global_get
-int 5
+gtxn 2 AssetAmount
+int 1000000
+/
 -
 app_global_put
 int 1
@@ -937,17 +941,18 @@ return
 
  
 // declare clear state program source
-let clearProgramSource = `#pragma version 2
-int 2
+let clearProgramSource = `#pragma version 5
+int 1
+return
 `;
 
 
 
 // firstTransaction()
-// logicSigcTransaction() //este solo habilitado funciona perfecto 
+logicSigcTransaction() //este solo habilitado funciona perfecto 
 // application_create() // crea perfectamente el contrato
 //   call_application() // llama bien al contrato creado (esta aislado por ahora, solo llama a la aplicacion)
 // optInApp() // llame a este para porbar que fallaba y o te dejaba hacer optIn ... igual no tiene sentido hacer optin en este modelo 
 // optinInAsset("10458941") // USDC Testnet ASA ID 10458941  
 // optinInAsset("56872718") // CO2 Testnet ASA ID 56872718
-updateProgram();
+// updateProgram();
